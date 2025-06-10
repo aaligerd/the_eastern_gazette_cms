@@ -1,7 +1,10 @@
+const { json } = require("express");
+
 const storyDataValidation = (req, res, next) => {
     const {
         created_date,
         lables,
+        content
     } = req.body;
 
     const requiredFields = [
@@ -16,7 +19,11 @@ const storyDataValidation = (req, res, next) => {
         }
     }
     
- 
+    let contentData=JSON.parse(content);
+    if(contentData?.blocks?.length==0){
+        return res.status(400).json({ msg: 'content is required and must be a non-empty object with blocks.' });
+    }
+
 
     if (lables && lables.length==0) {
         return res.status(400).json({ msg: 'Use atleast 1 lable' });
@@ -35,7 +42,7 @@ const updateStoryValidation = (req, res, next) => {
     } = req.body;
 
     const requiredFields = [
-        'title', 'content', 'seo_title', 'seo_headline',
+        'title', 'updated_content', 'seo_title', 'seo_headline',
         'seo_desc', 'seo_keywords', 'seo_url', 'thumbnail','seo_url_slug'
     ];
 
