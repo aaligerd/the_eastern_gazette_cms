@@ -12,8 +12,18 @@ db.connect((err)=>{
         console.log('database connetion failed: '+err);
         return;
     }
-    console.log("Database Connected");
+    setInterval(() => {
+        db.query('SELECT 1', (err) => {
+          if (err) {
+            console.error('Keep-alive query failed:', err);
+          }
+          console.log("Connection statying alive....");
+          
+        });
+      }, 3600000);
+    console.log('SQL Connected');
 })
+
 
 //blog cms apis
 app.use('/api/v1/story',require('./router/blogRouter'));
