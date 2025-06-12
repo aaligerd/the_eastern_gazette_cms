@@ -2,7 +2,6 @@ const express = require('express');
 const app = express();
 const cors=require('cors');
 const {db}=require('./database/db')
-require('dotenv').config();
 
 app.use(express.urlencoded());
 app.use(cors('*'))
@@ -18,7 +17,7 @@ db.connect((err)=>{
 
 //blog cms apis
 app.use('/api/v1/story',require('./router/blogRouter'));
-
+app.use('/api/v1/auth',require('./router/loginRouter'));
 
 
 app.use('/api/v1/uploadFile', require('./router/blogImageUploadRouter'));
