@@ -7,7 +7,7 @@ const createStoryAsDraft=async(req,res)=>{
 
     const createDraftQ=`INSERT INTO tbl_blog(title,content,category_id,subcategory_id,lables,status,seo_title,seo_headline,seo_description,seo_keywords,seo_url,thumbnail_url,created_by,updated_at,updated_by) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);`
     try {
-        await db.promise().query(createDraftQ,[title,content,1,2,lables.join(','),status,seo_title,seo_headline,seo_desc,seo_keywords,seo_url,thumbnail,created_by,created_date,created_date,created_by]);
+        await db.promise().query(createDraftQ,[title,content,category,subcategory,lables.join(','),status,seo_title,seo_headline,seo_desc,seo_keywords,seo_url,thumbnail,created_by,created_date,created_date,created_by]);
         //get the last inserted id
         const [rows,fields]=await db.promise().query(`select max(blog_id) as last_inserted_id from tbl_blog;`);
         return res.status(201).json({msg:'Story created as draft successfully',id:rows[0].last_inserted_id});
