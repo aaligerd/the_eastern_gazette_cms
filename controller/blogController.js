@@ -8,6 +8,7 @@ const createStoryAsDraft=async(req,res)=>{
     const createDraftQ=`INSERT INTO tbl_blog(title,content,category_id,subcategory_id,lables,status,seo_title,seo_headline,seo_description,seo_keywords,seo_url,thumbnail_url,created_by,updated_at,updated_by) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);`
     try {
         await db.promise().query(createDraftQ,[title,content,category,subcategory,lables.join(','),status,seo_title,seo_headline,seo_desc,seo_keywords,seo_url,thumbnail,created_by,created_date,created_date,created_by]);
+        storeLables(lables);
         //get the last inserted id
         const [rows,fields]=await db.promise().query(`select max(blog_id) as last_inserted_id from tbl_blog;`);
         return res.status(201).json({msg:'Story created as draft successfully',id:rows[0].last_inserted_id});
@@ -75,6 +76,7 @@ const updateStoryAndSaveById=async(req,res)=>{
     const updateStoryQ = `UPDATE tbl_blog SET title = ?, content = ?, category_id = ?, subcategory_id = ?, lables = ?, seo_title = ?, seo_headline = ?, seo_description = ?, seo_keywords = ?, seo_url = ?, thumbnail_url = ?,updated_at=?,updated_by=? WHERE blog_id = ?;`;
     try {
         await db.promise().query(updateStoryQ, [title,updated_content, category, subcategory, lables.join(','), seo_title, seo_headline, seo_desc, seo_keywords, seo_url_slug, thumbnail,updated_at,updated_by, blog_id]);
+        storeLables(lables);
         return res.status(200).json({ msg: 'Story updated and saved successfully' });
     } catch (error) {
         console.log(error);
@@ -119,4 +121,37 @@ const makeBlogPublishedById=async(req,res)=>{
     }
 }
 
-module.exports={createStoryAsDraft,getStoryForCMSDashboard,getStoryForCmsById,makeBlogUnpublishedById,updateStoryAndSaveById,getCategoryListForBlog,getSubCategoryListForBlog,makeBlogPublishedById};
+
+const storeLables = async (lables=[]) => {
+    console.log("storing lables");
+    const trimmedLabels = lables.map(label => label.trim().replaceAll(" ", ""));
+    const insertLabelQuery = 'INSERT IGNORE INTO tbl_lable(lable_name, lable_trim) VALUES (?, ?);';
+
+    try {
+        const insertPromises = lables.map((label, index) => {
+            return db.promise().query(insertLabelQuery, [label, trimmedLabels[index]]);
+        });
+
+        await Promise.all(insertPromises);
+    } catch (error) {
+        console.log("Error while inserting label data:", error);
+    }
+};
+
+
+const getLablesByString = async (req, res) => {
+    const { searchword } = req.params;
+    const getLabelQuery = `SELECT lable_name FROM tbl_lable WHERE lable_trim LIKE ?;`;
+
+    try {
+        const searchPattern = `%${searchword.trim().replaceAll(" ","")}%`; // Add wildcards around searchword
+        const [rowdata] = await db.promise().query(getLabelQuery, [searchPattern]);
+        console.log(rowdata);
+        return res.status(200).send({ data: rowdata });
+    } catch (error) {
+        return res.status(500).send({ msg: "Error: " + error });
+    }
+};
+
+
+module.exports={createStoryAsDraft,getStoryForCMSDashboard,getStoryForCmsById,makeBlogUnpublishedById,updateStoryAndSaveById,getCategoryListForBlog,getSubCategoryListForBlog,makeBlogPublishedById,getLablesByString};

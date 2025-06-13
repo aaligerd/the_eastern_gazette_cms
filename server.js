@@ -28,7 +28,9 @@ db.connect((err)=>{
 //blog cms apis
 app.use('/api/v1/story',require('./router/blogRouter'));
 app.use('/api/v1/auth',require('./router/loginRouter'));
-
-
+app.use('/api/v1/lables',require('./router/lableRouter'));
 app.use('/api/v1/uploadFile', require('./router/blogImageUploadRouter'));
-app.listen(8008, () => console.log('Server running on port 8008'));
+
+
+const PORT=process.env.SERVER_PORT||3001;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
