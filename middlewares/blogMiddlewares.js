@@ -4,12 +4,13 @@ const storyDataValidation = (req, res, next) => {
     const {
         created_date,
         lables,
-        content
+        content,
+        category,
+        subcategory
     } = req.body;
 
     const requiredFields = [
-        'title', 'created_by', 'created_date',
-        'category', 'subcategory', 'seo_title', 'seo_headline',
+        'title', 'created_by', 'created_date','seo_title', 'seo_headline',
         'seo_desc', 'seo_keywords', 'seo_url', 'thumbnail', 'status','published_by','by_line','edited_by'
     ];
 
@@ -18,6 +19,15 @@ const storyDataValidation = (req, res, next) => {
             return res.status(400).json({ msg: `${field} is required and must be a non-empty string.` });
         }
     }
+    
+    if(category==="Select category"){
+        return res.status(400).json({ msg: `Category is required and must be a non-empty string.` });
+    }
+
+     if(subcategory==="Select Subcategory"){
+        return res.status(400).json({ msg: `Subcategory is required and must be a non-empty string.` });
+    }
+
     
     let contentData=JSON.parse(content);
     if(contentData?.blocks?.length==0){
@@ -38,18 +48,26 @@ const storyDataValidation = (req, res, next) => {
 
 const updateStoryValidation = (req, res, next) => {
     const {
-        lables
+        lables,category,subcategory
     } = req.body;
 
     const requiredFields = [
         'title', 'updated_content', 'seo_title', 'seo_headline',
-        'seo_desc', 'seo_keywords', 'seo_url', 'thumbnail','seo_url_slug'
+        'seo_desc', 'seo_keywords', 'seo_url', 'thumbnail','seo_url_slug','by_line','edited_by','published_by'
     ];
 
     for (const field of requiredFields) {
         if (!req.body[field]) {
             return res.status(400).json({ msg: `${field} is required and must be a non-empty string.` });
         }
+    }
+
+        if(category==="Select category" || category===""){
+        return res.status(400).json({ msg: `Category is required and must be a non-empty string.` });
+    }
+
+     if(subcategory==="Select Subcategory"|| subcategory===""){
+        return res.status(400).json({ msg: `Subcategory is required and must be a non-empty string.` });
     }
     
 

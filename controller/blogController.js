@@ -2,12 +2,12 @@ const { db } = require("../database/db");
 const { getDateTimeString } = require("../utils/dateFunctions.js");
 //"by_line":"","published_by":"","edited_by":""
 const createStoryAsDraft=async(req,res)=>{
-    let{title,content,created_by,created_date,category,subcategory,lables,seo_title,seo_headline,seo_desc,seo_keywords,seo_url,thumbnail,status,by_line,published_by,edited_by}=req.body;
+    let{title,content,created_by,created_date,category,subcategory,lables,seo_title,seo_headline,seo_desc,seo_keywords,seo_url_slug,thumbnail,status,by_line,published_by,edited_by}=req.body;
     created_date=getDateTimeString(created_date);
 
     const createDraftQ=`INSERT INTO tbl_blog(title,content,category_id,subcategory_id,lables,status,seo_title,seo_headline,seo_description,seo_keywords,seo_url,thumbnail_url,created_by,created_at,updated_at,updated_by,by_line,edited_by,published_by) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);`
     try {
-        await db.promise().query(createDraftQ,[title,content,category,subcategory,lables.join(','),status,seo_title,seo_headline,seo_desc,seo_keywords,seo_url,thumbnail,created_by,created_date,created_date,created_by,by_line,edited_by,published_by]);
+        await db.promise().query(createDraftQ,[title,content,category,subcategory,lables.join(','),status,seo_title,seo_headline,seo_desc,seo_keywords,seo_url_slug,thumbnail,created_by,created_date,created_date,created_by,by_line,edited_by,published_by]);
         storeLables(lables);
         //get the last inserted id
         const [rows,fields]=await db.promise().query(`select max(blog_id) as last_inserted_id from tbl_blog;`);
@@ -71,11 +71,11 @@ const makeBlogUnpublishedById=async(req,res)=>{
 }
 
 const updateStoryAndSaveById=async(req,res)=>{
-    const { blog_id, title, updated_content, category, subcategory, lables, seo_title, seo_headline, seo_desc, seo_keywords, seo_url_slug, thumbnail,updated_by,updated_at } = req.body;
+    const { blog_id, title, updated_content, category, subcategory, lables, seo_title, seo_headline, seo_desc, seo_keywords, seo_url_slug, thumbnail,updated_by,updated_at,by_line,edited_by,published_by } = req.body;
     console.log("Updated Content",updated_at);
-    const updateStoryQ = `UPDATE tbl_blog SET title = ?, content = ?, category_id = ?, subcategory_id = ?, lables = ?, seo_title = ?, seo_headline = ?, seo_description = ?, seo_keywords = ?, seo_url = ?, thumbnail_url = ?,updated_at=?,updated_by=? WHERE blog_id = ?;`;
+    const updateStoryQ = `UPDATE tbl_blog SET title = ?, content = ?, category_id = ?, subcategory_id = ?, lables = ?, seo_title = ?, seo_headline = ?, seo_description = ?, seo_keywords = ?, seo_url = ?, thumbnail_url = ?,updated_at=?,updated_by=?,by_line=?,edited_by=?,published_by=? WHERE blog_id = ?;`;
     try {
-        await db.promise().query(updateStoryQ, [title,updated_content, category, subcategory, lables.join(','), seo_title, seo_headline, seo_desc, seo_keywords, seo_url_slug, thumbnail,updated_at,updated_by, blog_id]);
+        await db.promise().query(updateStoryQ, [title,updated_content, category, subcategory, lables.join(','), seo_title, seo_headline, seo_desc, seo_keywords, seo_url_slug, thumbnail,updated_at,updated_by,by_line,edited_by,published_by,blog_id]);
         storeLables(lables);
         return res.status(200).json({ msg: 'Story updated and saved successfully' });
     } catch (error) {
