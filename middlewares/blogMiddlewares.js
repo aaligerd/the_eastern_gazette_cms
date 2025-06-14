@@ -10,7 +10,7 @@ const storyDataValidation = (req, res, next) => {
     const requiredFields = [
         'title', 'created_by', 'created_date',
         'category', 'subcategory', 'seo_title', 'seo_headline',
-        'seo_desc', 'seo_keywords', 'seo_url', 'thumbnail', 'status'
+        'seo_desc', 'seo_keywords', 'seo_url', 'thumbnail', 'status','published_by','by_line','edited_by'
     ];
 
     for (const field of requiredFields) {

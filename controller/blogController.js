@@ -1,13 +1,13 @@
 const { db } = require("../database/db");
 const { getDateTimeString } = require("../utils/dateFunctions.js");
-
+//"by_line":"","published_by":"","edited_by":""
 const createStoryAsDraft=async(req,res)=>{
-    let{title,content,created_by,created_date,category,subcategory,lables,seo_title,seo_headline,seo_desc,seo_keywords,seo_url,thumbnail,status}=req.body;
+    let{title,content,created_by,created_date,category,subcategory,lables,seo_title,seo_headline,seo_desc,seo_keywords,seo_url,thumbnail,status,by_line,published_by,edited_by}=req.body;
     created_date=getDateTimeString(created_date);
 
-    const createDraftQ=`INSERT INTO tbl_blog(title,content,category_id,subcategory_id,lables,status,seo_title,seo_headline,seo_description,seo_keywords,seo_url,thumbnail_url,created_by,updated_at,updated_by) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);`
+    const createDraftQ=`INSERT INTO tbl_blog(title,content,category_id,subcategory_id,lables,status,seo_title,seo_headline,seo_description,seo_keywords,seo_url,thumbnail_url,created_by,created_at,updated_at,updated_by,by_line,edited_by,published_by) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);`
     try {
-        await db.promise().query(createDraftQ,[title,content,category,subcategory,lables.join(','),status,seo_title,seo_headline,seo_desc,seo_keywords,seo_url,thumbnail,created_by,created_date,created_date,created_by]);
+        await db.promise().query(createDraftQ,[title,content,category,subcategory,lables.join(','),status,seo_title,seo_headline,seo_desc,seo_keywords,seo_url,thumbnail,created_by,created_date,created_date,created_by,by_line,edited_by,published_by]);
         storeLables(lables);
         //get the last inserted id
         const [rows,fields]=await db.promise().query(`select max(blog_id) as last_inserted_id from tbl_blog;`);
@@ -123,7 +123,6 @@ const makeBlogPublishedById=async(req,res)=>{
 
 
 const storeLables = async (lables=[]) => {
-    console.log("storing lables");
     const trimmedLabels = lables.map(label => label.trim().replaceAll(" ", ""));
     const insertLabelQuery = 'INSERT IGNORE INTO tbl_lable(lable_name, lable_trim) VALUES (?, ?);';
 
@@ -146,7 +145,6 @@ const getLablesByString = async (req, res) => {
     try {
         const searchPattern = `%${searchword.trim().replaceAll(" ","")}%`; // Add wildcards around searchword
         const [rowdata] = await db.promise().query(getLabelQuery, [searchPattern]);
-        console.log(rowdata);
         return res.status(200).send({ data: rowdata });
     } catch (error) {
         return res.status(500).send({ msg: "Error: " + error });
