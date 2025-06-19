@@ -5,8 +5,13 @@ const createStoryAsDraft=async(req,res)=>{
     let{title,content,created_by,created_date,category,subcategory,lables,seo_title,seo_headline,seo_desc,seo_keywords,seo_url_slug,thumbnail,status,by_line,published_by,edited_by}=req.body;
     created_date=getDateTimeString(created_date);
 
+    const getSeoSlugQ='SELECT * FROM tbl_blog where seo_url=?';
     const createDraftQ=`INSERT INTO tbl_blog(title,content,category_id,subcategory_id,lables,status,seo_title,seo_headline,seo_description,seo_keywords,seo_url,thumbnail_url,created_by,created_at,updated_at,updated_by,by_line,edited_by,published_by) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);`
     try {
+        const[seoUrlRow]=await db.promise().query(getSeoSlugQ,[seo_url_slug]);
+        if(seoUrlRow.length>0){
+            return res.status(400).json({ msg:`Please Change the SEO URL....` });
+        }
         await db.promise().query(createDraftQ,[title,content,category,subcategory,lables.join(','),status,seo_title,seo_headline,seo_desc,seo_keywords,seo_url_slug,thumbnail,created_by,created_date,created_date,created_by,by_line,edited_by,published_by]);
         storeLables(lables);
         //get the last inserted id
@@ -152,4 +157,21 @@ const getLablesByString = async (req, res) => {
 };
 
 
-module.exports={createStoryAsDraft,getStoryForCMSDashboard,getStoryForCmsById,makeBlogUnpublishedById,updateStoryAndSaveById,getCategoryListForBlog,getSubCategoryListForBlog,makeBlogPublishedById,getLablesByString};
+const getStoryBySeoUrl=async(req,res)=>{
+    const {seo_url}=req.params;
+    const selectQ='select * from tbl_blog where seo_url=?';
+    try{
+        // Check if the SEO URL exists
+        const [rows,fields]=await db.promise().query(selectQ,[seo_url]);
+        if(rows.length===0){
+            return res.status(404).json({msg:'Story not found'});
+        }
+        // Return the story data
+        return res.status(200).json({msg:'Story fetched successfully',data:rows[0]});
+    }catch(error){
+        return res.status(500).json({msg:'Error while fetching story by SEO URL',error:error.message});
+    }
+}
+
+
+module.exports={createStoryAsDraft,getStoryForCMSDashboard,getStoryForCmsById,makeBlogUnpublishedById,updateStoryAndSaveById,getCategoryListForBlog,getSubCategoryListForBlog,makeBlogPublishedById,getLablesByString,getStoryBySeoUrl};
