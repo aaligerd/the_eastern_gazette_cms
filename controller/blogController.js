@@ -159,6 +159,7 @@ const getLablesByString = async (req, res) => {
 
 const getStoryBySeoUrl=async(req,res)=>{
     const {seo_url}=req.params;
+    console.log(seo_url)
     const selectQ='select * from tbl_blog where seo_url=?';
     try{
         // Check if the SEO URL exists
