@@ -2,17 +2,17 @@ const { db } = require("../database/db");
 const { getDateTimeString } = require("../utils/dateFunctions.js");
 //"by_line":"","published_by":"","edited_by":""
 const createStoryAsDraft=async(req,res)=>{
-    let{title,content,created_by,created_date,category,subcategory,lables,seo_title,seo_headline,seo_desc,seo_keywords,seo_url_slug,thumbnail,status,by_line,published_by,edited_by}=req.body;
+    let{title,content,created_by,created_date,category,subcategory,lables,seo_title,seo_headline,seo_desc,seo_keywords,seo_url_slug,thumbnail,status,by_line,published_by,edited_by,lowImageUrl}=req.body;
     created_date=getDateTimeString(created_date);
 
     const getSeoSlugQ='SELECT * FROM tbl_blog where seo_url=?';
-    const createDraftQ=`INSERT INTO tbl_blog(title,content,category_id,subcategory_id,lables,status,seo_title,seo_headline,seo_description,seo_keywords,seo_url,thumbnail_url,created_by,created_at,updated_at,updated_by,by_line,edited_by,published_by) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);`
+    const createDraftQ=`INSERT INTO tbl_blog(title,content,category_id,subcategory_id,lables,status,seo_title,seo_headline,seo_description,seo_keywords,seo_url,thumbnail_url,created_by,created_at,updated_at,updated_by,by_line,edited_by,published_by,low_thumbnail_url) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);`
     try {
         const[seoUrlRow]=await db.promise().query(getSeoSlugQ,[seo_url_slug]);
         if(seoUrlRow.length>0){
             return res.status(400).json({ msg:`Please Change the SEO URL....` });
         }
-        await db.promise().query(createDraftQ,[title,content,category,subcategory,lables.join(','),status,seo_title,seo_headline,seo_desc,seo_keywords,seo_url_slug,thumbnail,created_by,created_date,created_date,created_by,by_line,edited_by,published_by]);
+        await db.promise().query(createDraftQ,[title,content,category,subcategory,lables.join(','),status,seo_title,seo_headline,seo_desc,seo_keywords,seo_url_slug,thumbnail,created_by,created_date,created_date,created_by,by_line,edited_by,published_by,lowImageUrl]);
         storeLables(lables);
         //get the last inserted id
         const [rows,fields]=await db.promise().query(`select max(blog_id) as last_inserted_id from tbl_blog;`);
@@ -27,7 +27,25 @@ const createStoryAsDraft=async(req,res)=>{
 
 
 const getStoryForCMSDashboard=async(req,res)=>{
-    const getStoryQ=`SELECT * FROM tbl_blog order by blog_id DESC;`;
+    const getStoryQ=`SELECT 
+tb.blog_id,
+tb.title,
+tb.lables,
+tc.name as category_name,
+tsc.name as subcategory_name,
+ted1.editor_name as published_by,
+ted2.editor_name as updated_by,
+tb.created_at,
+tb.updated_at,
+tb.status,
+tb.title,
+tb.seo_url
+FROM tbl_blog tb
+join tbl_category tc on tb.category_id=tc.category_id
+join tbl_subcategory tsc on tb.subcategory_id=tsc.subcategory_id
+join tbl_editor ted1 on ted1.editor_id=tb.created_by
+join tbl_editor ted2 on ted2.editor_id=tb.updated_by
+order by blog_id DESC;`;
     try {
         const [rows,fields]=await db.promise().query(getStoryQ);
         return res.status(200).json({msg:'Stories fetched successfully',data:rows});
